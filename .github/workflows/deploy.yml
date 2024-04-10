@@ -1,32 +1,31 @@
-name: Deploy
-
-on:
-  push:
-    branches:
-      - master
-
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: SetupJDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          distribution: 'temurin'
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: Build
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: wrapper
-          arguments: "publishNukkitPublicationToOpencollabRepository"
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.welcome=never"
-          DEPLOY_USERNAME: ${{ vars.OPENCOLLAB_USERNAME }}
-          DEPLOY_PASSWORD: ${{ secrets.OPENCOLLAB_PASSWORD }}
+    - continue-on-error: true
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+    - continue-on-error: true
+      name: SetupJDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 8
+    - continue-on-error: true
+      name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - continue-on-error: true
+      env:
+        DEPLOY_PASSWORD: ${{ secrets.OPENCOLLAB_PASSWORD }}
+        DEPLOY_USERNAME: ${{ vars.OPENCOLLAB_USERNAME }}
+        GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.welcome=never
+      name: Build
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: publishNukkitPublicationToOpencollabRepository
+        gradle-version: wrapper
+name: Deploy
+on:
+  repository_dispatch:
+    types: trigger-ga___deploy.yml

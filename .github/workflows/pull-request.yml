@@ -1,33 +1,36 @@
-name: Pull Request
-
-on: [pull_request]
-
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
-      - name: SetupJDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: 8
-          distribution: 'temurin'
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: Build
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: wrapper
-          arguments: "shadowJar"
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.welcome=never"
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v1
-        if: success()
-        with:
-          name: Nukkit
-          path: target/nukkit-1.0-SNAPSHOT.jar
+    - continue-on-error: true
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+    - continue-on-error: true
+      name: SetupJDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 8
+    - continue-on-error: true
+      name: Validate Gradle Wrapper
+      uses: gradle/wrapper-validation-action@v1
+    - continue-on-error: true
+      env:
+        GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.welcome=never
+      name: Build
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: shadowJar
+        gradle-version: wrapper
+    - continue-on-error: true
+      if: success()
+      name: Archive artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: Nukkit
+        path: target/nukkit-1.0-SNAPSHOT.jar
+name: Pull Request
+on:
+  repository_dispatch:
+    types: trigger-ga___pull-request.yml
